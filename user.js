@@ -1,0 +1,230 @@
+var mysql = require("mysql");
+const isset = require('isset');
+const pad = require('pad-left');
+const md5 = require("md5");
+
+function USER_ROUTER(router, pool) {
+    var self = this;
+    self.handleRoutes(router, pool);
+}
+
+USER_ROUTER.prototype.handleRoutes = function (router, pool) {
+
+    router.post("/user/create", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.nama_spg) && isset(req.body.nama_toko)
+            && isset(req.body.depot) && isset(req.body.zona) && isset(req.body.hak_akses)) {
+
+            var query = `INSERT INTO user (nama_spg, nama_toko, depot, zona) 
+                        VALUES (UPPER(?), UPPER(?), UPPER(TRIM(?)), ?)`;
+            var table = [req.body.nama_spg, req.body.nama_toko, req.body.depot, req.body.zona];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                if (err) console.log(err);
+                connection.query(query, function (err, results) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        var kode_spg = 'SPG-' + (pad(results.insertId, 4, '0'));
+                        var query = `UPDATE user SET kode_spg = ? WHERE id = ?`;
+                        var table = [kode_spg, results.insertId];
+                        query = mysql.format(query, table);
+                        pool.getConnection(function (err, connection) {
+                            connection.query(query, function (err) {
+                                connection.release();
+                                if (err) {
+                                    res.status(500);
+                                    data.error_msg = "Error executing MySQL query";
+                                    res.json(data);
+                                } else {
+                                    var query = `INSERT INTO login (kode_spg, password, hak_akses) VALUES (?, ?, ?)`;
+                                    var table = [kode_spg, md5(req.body.nama_spg.toUpperCase()), req.body.hak_akses];
+                                    query = mysql.format(query, table);
+                                    pool.getConnection(function (err, connection) {
+                                        connection.query(query, function (err, rows) {
+                                            connection.release();
+                                            if (err) {
+                                                res.status(500);
+                                                data.error_msg = "Error executing MySQL query";
+                                                res.json(data);
+                                            } else {
+                                                res.status(200);
+                                                data.error = false;
+                                                data.error_msg = 'User succesfuly created..';
+                                                res.json(data);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/user/update", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_spg) && isset(req.body.nama_spg) && isset(req.body.nama_toko)
+            && isset(req.body.depot) && isset(req.body.zona) && isset(req.body.status)) {
+            var query = `UPDATE user SET nama_spg = UPPER(?), nama_toko = UPPER(?),
+                        depot = UPPER(TRIM(?)), zona = ?, status = ? WHERE kode_spg = ?`;
+            var table = [req.body.nama_spg, req.body.nama_toko, req.body.depot, 
+                        req.body.zona, req.body.status, req.body.kode_spg];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'User succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/user/password", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_spg) && isset(req.body.password)) {
+            var query = `UPDATE login SET password = ? WHERE kode_spg = ?`;
+            var table = [md5(req.body.password), req.body.kode_spg];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Password succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.get("/users/:depot", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: "",
+            users: []
+        };
+
+        if (req.params.depot === "ADMIN") {
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona FROM user`;
+        } else {
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+        			FROM user WHERE depot = ?`;
+        }
+
+
+        var table = [req.params.depot];
+        query = mysql.format(query, table);
+        pool.getConnection(function (err, connection) {
+            connection.query(query, function (err, rows) {
+                connection.release();
+                if (err) {
+                    res.status(500);
+                    data.error_msg = "Error executing MySQL query";
+                    res.json(data);
+                } else {
+                    if (rows.length > 0) {
+                        data.error = false;
+                        data.error_msg = 'Success..';
+                        data.users = rows;
+                        res.status(200);
+                        res.json(data);
+                    } else {
+                        data["error_msg"] = 'No users Found..';
+                        res.status(404);
+                        res.json(data);
+                    }
+                }
+            });
+        });
+
+    });
+
+    router.get("/user/:depot/:kode_spg", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: "",
+            user: {}
+        };
+
+        if (req.params.depot === "ADMIN") {
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+        			FROM user WHERE kode_spg = ?`;
+            var table = [req.params.kode_spg];
+        } else {
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+        			FROM user WHERE kode_spg = ? AND depot = ?`;
+            var table = [req.params.kode_spg, req.params.depot];
+        }
+        query = mysql.format(query, table);
+        pool.getConnection(function (err, connection) {
+            connection.query(query, function (err, rows) {
+                connection.release();
+                if (err) {
+                    res.status(500);
+                    data.error_msg = "Error executing MySQL query";
+                    res.json(data);
+                } else {
+                    if (rows.length > 0) {
+                        data.error = false;
+                        data.error_msg = 'Success..';
+                        data.user = rows[0];
+                        res.status(200);
+                        res.json(data);
+                    } else {
+                        data.error_msg = 'No user Found..';
+                        res.status(404);
+                        res.json(data);
+                    }
+                }
+            });
+        });
+    });
+}
+
+module.exports = USER_ROUTER;
