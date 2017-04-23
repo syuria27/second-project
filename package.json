@@ -1,0 +1,19 @@
+{
+  "name": "second-project",
+  "version": "1.0.0",
+  "description": "for my second project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/syuria27/second-project.git"
+  },
+  "author": "Syukron Rizqi Ardhi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/syuria27/second-project/issues"
+  },
+  "homepage": "https://github.com/syuria27/second-project#readme"
+}
