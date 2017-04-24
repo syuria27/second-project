@@ -17,7 +17,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
             error_msg: ""
         };
 
-        var query = `SELECT kode_absen,kode_spg,tanggal,jam_pulang,lokasi_pulang
+        var query = `SELECT kode_absen,kode_spg,DATE_FORMAT(tanggal, '%d-%m-%Y') as tanggal,jam_pulang,lokasi_pulang
         			FROM absen WHERE kode_spg = ? AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?`;
         var table = [req.params.kode_spg, req.params.bulan, req.params.tahun];
         query = mysql.format(query, table);
@@ -51,7 +51,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
             error_msg: ""
         };
 
-        var query = `SELECT kode_absen,kode_spg,tanggal,jam_masuk,lokasi_masuk
+        var query = `SELECT kode_absen,kode_spg,DATE_FORMAT(tanggal, '%d-%m-%Y') as tanggal,jam_masuk,lokasi_masuk
         			FROM absen WHERE kode_spg = ? AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?`;
         var table = [req.params.kode_spg, req.params.bulan, req.params.tahun];
         query = mysql.format(query, table);
@@ -103,7 +103,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
             var dd1 = d1.valueOf();
             var dd2 = d2.valueOf();
 
-            if (/*dd1 > dd2*/false) {
+            if (dd1 > dd2) {
                 res.status(400);
                 data.error_msg = 'Lewat waktu absen';
                 res.json(data);
@@ -220,7 +220,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
             var dd1 = d1.valueOf();
             var dd2 = d2.valueOf();
 
-            if (false/*dd1 < dd2*/) {
+            if (dd1 < dd2) {
                 res.status(400);
                 data.error_msg = 'Belum masuk waktu absen';
                 res.json(data);

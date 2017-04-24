@@ -15,11 +15,43 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
             error_msg: ""
         };
 
-        var query = `SELECT * FROM product WHERE kode_product NOT IN
+        var query = `SELECT * FROM product WHERE status = 1 AND kode_product NOT IN
         			(SELECT kode_product FROM product_report where kode_spg = ?
         			 AND tanggal = DATE(CONVERT_TZ(CURDATE(),@@session.time_zone,'+07:00')))`;
         var table = [req.params.kode_spg];
         query = mysql.format(query, table);
+        pool.getConnection(function (err, connection) {
+            connection.query(query, function (err, rows) {
+                connection.release();
+                if (err) {
+                    res.status(500);
+                    data.error_msg = "Error executing MySQL query";
+                    res.json(data);
+                } else {
+                    if (rows.length != 0) {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Success..';
+                        data.products = rows;
+                        res.json(data);
+                    } else {
+                        res.status(404);
+                        data.error_msg = 'No product Found..';
+                        res.json(data);
+                    }
+                }
+            });
+        });
+    });
+
+    router.get("/products", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        var query = `SELECT * FROM product`;
+        query = mysql.format(query);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();

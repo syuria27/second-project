@@ -3,7 +3,7 @@ var cors = require("cors");
 var mysql = require("mysql");
 var bodyParser = require("body-parser");
 
-//var login = require("./login.js");
+var login = require("./login.js");
 const user = require("./user.js");
 const daily = require("./daily.js");
 const product = require("./product.js");
@@ -33,11 +33,11 @@ REST.prototype.connectMysql = function () {
 REST.prototype.configureExpress = function (pool) {
     var self = this;
     app.use(cors());
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ limit: "50mb",extended: true }));
+    app.use(bodyParser.json({limit: "50mb"}));
     var router = express.Router();
     app.use('/api', router);
-    //var login_router = new login(router, pool, md5);
+    var login_router = new login(router, pool);
     var user_router = new user(router, pool);
     var daily_router = new daily(router,pool);
     var product_router = new product(router,pool);
