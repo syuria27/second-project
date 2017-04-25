@@ -151,9 +151,9 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (req.params.depot === "ADMIN") {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona FROM user`;
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona, status FROM user`;
         } else {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona, status
         			FROM user WHERE depot = ?`;
         }
 
