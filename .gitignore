@@ -2,3 +2,4 @@
 /.vscode
 /mobile-api/upload
 /web-api/node_modules
+/web-api/.vscode
