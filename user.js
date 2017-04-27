@@ -10,150 +10,17 @@ function USER_ROUTER(router, pool) {
 
 USER_ROUTER.prototype.handleRoutes = function (router, pool) {
 
-    router.post("/user/create", function (req, res) {
-        var data = {
-            error: true,
-            error_msg: ""
-        };
-
-        if (isset(req.body.nama_spg) && isset(req.body.nama_toko)
-            && isset(req.body.depot) && isset(req.body.zona) && isset(req.body.hak_akses)) {
-
-            var query = `INSERT INTO user (nama_spg, nama_toko, depot, zona) 
-                        VALUES (UPPER(?), UPPER(?), UPPER(TRIM(?)), ?)`;
-            var table = [req.body.nama_spg, req.body.nama_toko, req.body.depot, req.body.zona];
-            query = mysql.format(query, table);
-            pool.getConnection(function (err, connection) {
-                if (err) console.log(err);
-                connection.query(query, function (err, results) {
-                    connection.release();
-                    if (err) {
-                        res.status(500);
-                        data.error_msg = "Error executing MySQL query";
-                        res.json(data);
-                    } else {
-                        var kode_spg = 'SPG-' + (pad(results.insertId, 4, '0'));
-                        var query = `UPDATE user SET kode_spg = ? WHERE id = ?`;
-                        var table = [kode_spg, results.insertId];
-                        query = mysql.format(query, table);
-                        pool.getConnection(function (err, connection) {
-                            connection.query(query, function (err) {
-                                connection.release();
-                                if (err) {
-                                    res.status(500);
-                                    data.error_msg = "Error executing MySQL query";
-                                    res.json(data);
-                                } else {
-                                    var query = `INSERT INTO login (kode_spg, password, hak_akses) VALUES (?, ?, ?)`;
-                                    var table = [kode_spg, md5(req.body.nama_spg.toUpperCase()), req.body.hak_akses];
-                                    query = mysql.format(query, table);
-                                    pool.getConnection(function (err, connection) {
-                                        connection.query(query, function (err, rows) {
-                                            connection.release();
-                                            if (err) {
-                                                res.status(500);
-                                                data.error_msg = "Error executing MySQL query";
-                                                res.json(data);
-                                            } else {
-                                                res.status(200);
-                                                data.error = false;
-                                                data.error_msg = 'User succesfuly created..';
-                                                res.json(data);
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        });
-                    }
-                });
-            });
-
-        } else {
-            res.status(400);
-            data.error_msg = "Missing some params..";
-            res.json(data);
-        }
-    });
-
-    router.put("/user/update", function (req, res) {
-        var data = {
-            error: true,
-            error_msg: ""
-        };
-
-        if (isset(req.body.kode_spg) && isset(req.body.nama_spg) && isset(req.body.nama_toko)
-            && isset(req.body.depot) && isset(req.body.zona) && isset(req.body.status)) {
-            var query = `UPDATE user SET nama_spg = UPPER(?), nama_toko = UPPER(?),
-                        depot = UPPER(TRIM(?)), zona = ?, status = ? WHERE kode_spg = ?`;
-            var table = [req.body.nama_spg, req.body.nama_toko, req.body.depot, 
-                        req.body.zona, req.body.status, req.body.kode_spg];
-            query = mysql.format(query, table);
-            pool.getConnection(function (err, connection) {
-                connection.query(query, function (err) {
-                    connection.release();
-                    if (err) {
-                        res.status(500);
-                        data.error_msg = "Error executing MySQL query";
-                        res.json(data);
-                    } else {
-                        res.status(200);
-                        data.error = false;
-                        data.error_msg = 'User succesfuly updated..';
-                        res.json(data);
-                    }
-                });
-            });
-        } else {
-            res.status(400);
-            data.error_msg = "Missing some params..";
-            res.json(data);
-        }
-    });
-
-    router.put("/user/password", function (req, res) {
-        var data = {
-            error: true,
-            error_msg: ""
-        };
-
-        if (isset(req.body.kode_spg) && isset(req.body.password)) {
-            var query = `UPDATE login SET password = ? WHERE kode_spg = ?`;
-            var table = [md5(req.body.password), req.body.kode_spg];
-            query = mysql.format(query, table);
-            pool.getConnection(function (err, connection) {
-                connection.query(query, function (err) {
-                    connection.release();
-                    if (err) {
-                        res.status(500);
-                        data.error_msg = "Error executing MySQL query";
-                        res.json(data);
-                    } else {
-                        res.status(200);
-                        data.error = false;
-                        data.error_msg = 'Password succesfuly updated..';
-                        res.json(data);
-                    }
-                });
-            });
-        } else {
-            res.status(400);
-            data.error_msg = "Missing some params..";
-            res.json(data);
-        }
-    });
-
-    router.get("/users/:depot", function (req, res) {
+    router.get("/sales/:depot", function (req, res) {
         var data = {
             error: true,
             error_msg: "",
-            users: []
+            sales: []
         };
 
         if (req.params.depot === "ADMIN") {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona, status FROM user`;
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot status FROM user`;
         } else {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona, status
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot status
         			FROM user WHERE depot = ?`;
         }
 
@@ -171,7 +38,7 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
                     if (rows.length > 0) {
                         data.error = false;
                         data.error_msg = 'Success..';
-                        data.users = rows;
+                        data.sales = rows;
                         res.status(200);
                         res.json(data);
                     } else {
@@ -185,11 +52,11 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
 
     });
 
-    router.get("/user/:depot/:kode_spg", function (req, res) {
+    router.get("/sales/:depot/:kode_spg", function (req, res) {
         var data = {
             error: true,
             error_msg: "",
-            user: {}
+            sales: {}
         };
 
         if (req.params.depot === "ADMIN") {
@@ -213,7 +80,7 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
                     if (rows.length > 0) {
                         data.error = false;
                         data.error_msg = 'Success..';
-                        data.user = rows[0];
+                        data.sales = rows[0];
                         res.status(200);
                         res.json(data);
                     } else {

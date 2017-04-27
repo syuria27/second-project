@@ -3,11 +3,12 @@ var cors = require("cors");
 var mysql = require("mysql");
 var bodyParser = require("body-parser");
 
-var login = require("./login.js");
+const login = require("./login.js");
 const user = require("./user.js");
 const daily = require("./daily.js");
 const product = require("./product.js");
 const absen = require("./absen.js");
+const manage = require("./manage.js");
 
 var app = express();
 
@@ -38,6 +39,7 @@ REST.prototype.configureExpress = function (pool) {
     var router = express.Router();
     app.use('/api', router);
     var login_router = new login(router, pool);
+    var manage_router = new manage(router, pool);
     var user_router = new user(router, pool);
     var daily_router = new daily(router,pool);
     var product_router = new product(router,pool);
