@@ -3,12 +3,12 @@ const isset = require('isset');
 const pad = require('pad-left');
 const md5 = require("md5");
 
-function USER_ROUTER(router, pool) {
+function SALES_ROUTER(router, pool) {
     var self = this;
     self.handleRoutes(router, pool);
 }
 
-USER_ROUTER.prototype.handleRoutes = function (router, pool) {
+SALES_ROUTER.prototype.handleRoutes = function (router, pool) {
 
     router.get("/sales/:depot", function (req, res) {
         var data = {
@@ -94,4 +94,4 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
     });
 }
 
-module.exports = USER_ROUTER;
+module.exports = SALES_ROUTER;

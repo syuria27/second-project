@@ -43,39 +43,7 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
             });
         });
     });
-
-    router.get("/products", function (req, res) {
-        var data = {
-            error: true,
-            error_msg: ""
-        };
-
-        var query = `SELECT * FROM product`;
-        query = mysql.format(query);
-        pool.getConnection(function (err, connection) {
-            connection.query(query, function (err, rows) {
-                connection.release();
-                if (err) {
-                    res.status(500);
-                    data.error_msg = "Error executing MySQL query";
-                    res.json(data);
-                } else {
-                    if (rows.length != 0) {
-                        res.status(200);
-                        data.error = false;
-                        data.error_msg = 'Success..';
-                        data.products = rows;
-                        res.json(data);
-                    } else {
-                        res.status(404);
-                        data.error_msg = 'No product Found..';
-                        res.json(data);
-                    }
-                }
-            });
-        });
-    });
-
+    
     router.post("/product/report", function (req, res) {
         var data = {
             error: true,
@@ -83,37 +51,58 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (isset(req.body.kode_spg) && isset(req.body.products)) {
-            var prods = req.body.products;
-            var tanggal = moment().format('YYYY-MM-DD');
-
-            var jsonObj = JSON.parse(prods);
-            var jsonArr = jsonObj['products'];
-            var inserts = [];
-
-            for (var i in jsonArr) {
-                var kode_product = jsonArr[i]['kode_product'];
-                var volume = jsonArr[i]['volume'];
-                inserts.push([req.body.kode_spg, tanggal, kode_product, volume]);
-            }
-
-            var query = `INSERT INTO product_report 
-	        			(kode_spg, tanggal, kode_product, volume) 
-						VALUES ?`;
-            var table = [inserts];
+            var query = `SELECT kode_laporan FROM daily_report WHERE kode_spg = ? AND tanggal 
+	        			= DATE(CONVERT_TZ(CURDATE(),@@session.time_zone,'+07:00'))`;
+            var table = [req.body.kode_spg];
             query = mysql.format(query, table);
             pool.getConnection(function (err, connection) {
-                connection.query(query, function (err) {
+                connection.query(query, function (err, rows) {
                     connection.release();
                     if (err) {
-                        console.log(err);
                         res.status(500);
                         data.error_msg = "Error executing MySQL query";
                         res.json(data);
                     } else {
-                        res.status(200);
-                        data.error = false;
-                        data.error_msg = 'Report succesfuly submited..';
-                        res.json(data);
+                        if (rows.length <= 0) {
+                            res.status(404);
+                            data.error_msg = 'Please Input CCM and RM first..';
+                            res.json(data);
+                        } else {
+                            var prods = req.body.products;
+                            var tanggal = moment().format('YYYY-MM-DD');
+
+                            var jsonObj = JSON.parse(prods);
+                            var jsonArr = jsonObj['products'];
+                            var inserts = [];
+
+                            for (var i in jsonArr) {
+                                var kode_product = jsonArr[i]['kode_product'];
+                                var volume = jsonArr[i]['volume'];
+                                inserts.push([req.body.kode_spg, tanggal, kode_product, volume]);
+                            }
+
+                            var query = `INSERT INTO product_report 
+                                        (kode_spg, tanggal, kode_product, volume) 
+                                        VALUES ?`;
+                            var table = [inserts];
+                            query = mysql.format(query, table);
+                            pool.getConnection(function (err, connection) {
+                                connection.query(query, function (err) {
+                                    connection.release();
+                                    if (err) {
+                                        console.log(err);
+                                        res.status(500);
+                                        data.error_msg = "Error executing MySQL query";
+                                        res.json(data);
+                                    } else {
+                                        res.status(200);
+                                        data.error = false;
+                                        data.error_msg = 'Report succesfuly submited..';
+                                        res.json(data);
+                                    }
+                                });
+                            });
+                        }
                     }
                 });
             });
@@ -164,8 +153,7 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         var query = `SELECT pr.id,pr.kode_spg,DATE_FORMAT(pr.tanggal, '%d-%m-%Y') as tanggal,p.nama_product,pr.volume
-        			FROM product_report pr 
-        			LEFT JOIN product p ON pr.kode_product = p.kode_product  
+        			FROM product_report pr LEFT JOIN product p ON pr.kode_product = p.kode_product  
         			WHERE pr.kode_spg = ? AND pr.tanggal = ?`;
         var table = [req.params.kode_spg, req.params.tanggal];
         query = mysql.format(query, table);

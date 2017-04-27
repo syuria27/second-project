@@ -1,3 +1,4 @@
-/node_modules
+/mobile-api/node_modules
 /.vscode
-/upload
+/mobile-api/upload
+/web-api/node_modules

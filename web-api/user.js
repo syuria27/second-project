@@ -3,14 +3,14 @@ const isset = require('isset');
 const pad = require('pad-left');
 const md5 = require("md5");
 
-function MANAGE_ROUTER(router, pool) {
+function USER_ROUTER(router, pool) {
     var self = this;
     self.handleRoutes(router, pool);
 }
 
-MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
+USER_ROUTER.prototype.handleRoutes = function (router, pool) {
 
-    router.post("/manage/create/user", function (req, res) {
+    router.post("/user/create", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -76,7 +76,7 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
         }
     });
 
-    router.put("/manage/update/user", function (req, res) {
+    router.put("/user/update", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -111,7 +111,7 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
         }
     });
 
-    router.put("/manage/user/password", function (req, res) {
+    router.put("/user/password", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -143,7 +143,7 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
         }
     });
 
-    router.put("/manage/user/status", function (req, res) {
+    router.put("/user/status", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -175,7 +175,7 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
         }
     });
 
-    router.get("/manage/users", function (req, res) {
+    router.get("/users", function (req, res) {
         var data = {
             error: true,
             error_msg: "",
@@ -210,7 +210,7 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
 
     });
 
-    router.get("/manage/user/:kode_spg", function (req, res) {
+    router.get("/user/:kode_spg", function (req, res) {
         var data = {
             error: true,
             error_msg: "",
@@ -249,4 +249,4 @@ MANAGE_ROUTER.prototype.handleRoutes = function (router, pool) {
 
 }
 
-module.exports = MANAGE_ROUTER;
+module.exports = USER_ROUTER;
