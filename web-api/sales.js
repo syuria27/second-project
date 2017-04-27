@@ -18,9 +18,9 @@ SALES_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (req.params.depot === "ADMIN") {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot status FROM user`;
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot FROM user`;
         } else {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot status
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot
         			FROM user WHERE depot = ?`;
         }
 
@@ -60,11 +60,11 @@ SALES_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (req.params.depot === "ADMIN") {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot
         			FROM user WHERE kode_spg = ?`;
             var table = [req.params.kode_spg];
         } else {
-            var query = `SELECT kode_spg, nama_spg, nama_toko, depot, zona
+            var query = `SELECT kode_spg, nama_spg, nama_toko, depot
         			FROM user WHERE kode_spg = ? AND depot = ?`;
             var table = [req.params.kode_spg, req.params.depot];
         }
