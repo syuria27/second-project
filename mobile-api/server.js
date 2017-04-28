@@ -6,6 +6,7 @@ var bodyParser = require("body-parser");
 const login = require("./login.js");
 const daily = require("./daily.js");
 const product = require("./product.js");
+const focus = require("./focus.js");
 const absen = require("./absen.js");
 
 var app = express();
@@ -39,6 +40,7 @@ REST.prototype.configureExpress = function (pool) {
     var login_router = new login(router, pool);
     var daily_router = new daily(router,pool);
     var product_router = new product(router,pool);
+    var focus_router = new focus(router,pool);
     var absen_router = new absen(router, pool);
     // Handle 404 - Keep this as a last route
     app.use(function (req, res, next) {
