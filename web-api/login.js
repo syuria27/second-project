@@ -16,7 +16,7 @@ LOGIN_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (isset(req.body.username) && isset(req.body.password)) {
-            var query = `SELECT u.kode_spg,nama_spg,nama_toko,depot,password FROM user u
+            var query = `SELECT u.kode_spg,nama_spg,nama_toko,depot,hak_akses,password FROM user u
 	         			LEFT JOIN login l ON u.kode_spg = l.kode_spg 
 	         			WHERE u.kode_spg = ? AND u.status = 1 AND l.hak_akses > 1`;
             var table = [req.body.username];
@@ -37,7 +37,8 @@ LOGIN_ROUTER.prototype.handleRoutes = function (router, pool) {
                                     kode_spg: rows[0].username,
                                     nama_spg: rows[0].nama_spg,
                                     nama_toko: rows[0].nama_toko,
-                                    depot: rows[0].depot
+                                    depot: rows[0].depot,
+				    hak_akses: rows[0].hak_akses
                                 };
                                 res.json(data);
                             } else {
