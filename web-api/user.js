@@ -151,7 +151,7 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
 
         if (isset(req.body.kode_spg) && isset(req.body.status)) {
             var query = `UPDATE user SET status = ? WHERE kode_spg = ?`;
-            var table = [md5(req.body.status), req.body.kode_spg];
+            var table = [req.body.status, req.body.kode_spg];
             query = mysql.format(query, table);
             pool.getConnection(function (err, connection) {
                 connection.query(query, function (err) {
