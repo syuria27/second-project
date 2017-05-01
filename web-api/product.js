@@ -47,8 +47,11 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
             error_msg: ""
         };
 
-        var query = `SELECT *, DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl
-                    FROM Daily_Product_Report WHERE kode_spg = ? AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?`;
+        var query = `SELECT *, concat('Rp. ',format(ccm,0)) as jml_ccm,
+                    concat('Rp. ',format(rm,0)) as jml_rm,
+                    DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl
+                    FROM Daily_Product_Report WHERE kode_spg = ?
+                    AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?`;
         var table = [req.params.kode_spg, req.params.bulan, req.params.tahun];
         query = mysql.format(query,table);
         pool.getConnection(function (err, connection) {
@@ -82,10 +85,16 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (req.params.depot === "ADMIN") {
-            var query = `SELECT *, DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl FROM Daily_Product_Report WHERE tanggal = ?`;
+            var query = `SELECT *, concat('Rp. ',format(ccm,0)) as jml_ccm,
+                        concat('Rp. ',format(rm,0)) as jml_rm,
+                        DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl
+                        FROM Daily_Product_Report WHERE tanggal = ?`;
             var table = [req.params.tanggal];
         } else {
-            var query = `SELECT *, DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl FROM Daily_Product_Report WHERE tanggal = ? AND depot = ?`;
+            var query = `SELECT *, concat('Rp. ',format(ccm,0)) as jml_ccm,
+                        concat('Rp. ',format(rm,0)) as jml_rm,
+                        DATE_FORMAT(tanggal, '%d-%m-%Y') as tgl
+                        FROM Daily_Product_Report WHERE tanggal = ? AND depot = ?`;
             var table = [req.params.tanggal, req.params.depot];
         }
         query = mysql.format(query,table);
