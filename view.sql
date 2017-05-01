@@ -33,6 +33,38 @@ create view Daily_Product_Report as (
 	group by dr.kode_spg, dr.tanggal
 );
 
+create view Monthly_Product_Report as (
+	select kode_spg, nama_spg, nama_toko, depot, MONTH(tanggal) as bulan, YEAR(tanggal) as tahun,
+	sum(ELASTEX) as `ELASTEX`,
+	sum(WTB_RM) as `WTB_RM`,
+	sum(MATEX_CAT_GENTENG_CCM) as `MATEX_CAT_GENTENG_CCM`,
+	sum(MM_PRIMER) as `MM_PRIMER`,
+	sum(STONESHIELD) as `STONESHIELD`,
+	sum(VINILEX_TINTING) as `VINILEX_TINTING`,
+	sum(SPOT_LESS) as `SPOT_LESS`,
+	sum(MM_CLEAR) as `MM_CLEAR`,
+	sum(SPORTSKOTE_CCM) as `SPORTSKOTE_CCM`,
+	sum(WTB_SOLAREFLECT) as `WTB_SOLAREFLECT`,
+	sum(FLAW_LESS) as `FLAW_LESS`,
+	sum(ROOF_COATING_RM) as `ROOF_COATING_RM`,
+	sum(TIMBERFINISH_RM) as `TIMBERFINISH_RM`,
+	sum(BODELAC_2IN1_ANTI_KARAT) as `BODELAC_2IN1_ANTI_KARAT`,
+	sum(VINILEX_RM) as `VINILEX_RM`,
+	sum(MM_TOP_COAT) as `MM_TOP_COAT`,
+	sum(NIPPON_9000) as `NIPPON_9000`,
+	sum(SEALER_SERIES) as `SEALER_SERIES`,
+	sum(BW_SERIES) as `BW_SERIES`,
+	sum(WTB_CCM) as `WTB_CCM`,
+	sum(NIPPON_WOOD_STAIN) as `NIPPON_WOOD_STAIN`,
+	sum(SATIN_GLO) as `SATIN_GLO`,
+	sum(VPRO_PPRO_MATEX_KIMEX_TINTING) as `VPRO_PPRO_MATEX_KIMEX_TINTING`,
+	sum(PLATONE_800_or_BEE_BRAND_1000) as `PLATONE_800_or_BEE_BRAND_1000`,
+	sum(NP_ZINC_CHROMATE_GREEN_or_BODELAC_8000_ZINC_CHROMATE) as `NP_ZINC_CHROMATE_GREEN_or_BODELAC_8000_ZINC_CHROMATE`,
+	sum(ccm) as ccm, sum(rm) as rm
+	from Daily_Product_Report 
+	group by kode_spg, MONTH(tanggal), YEAR(tanggal)
+);
+
 create view Focus_Product_Report as (
 	select u.kode_spg, nama_spg, nama_toko, depot,
 	sum(case when (kode_focus = 'PRF-0001') then DATE_FORMAT(tanggal, '%Y%m%d') else 0 end) as `VPRO_PPRO_MATEX_KIMEX`,
