@@ -105,7 +105,7 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
                         res.status(200);
                         data.error = false;
                         data.error_msg = 'Success..';
-                        data.products = rows;
+                        data.focuses = rows;
                         res.json(data);
                     } else {
                         res.status(404);
