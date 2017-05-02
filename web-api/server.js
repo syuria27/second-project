@@ -1,4 +1,5 @@
 var express = require("express");
+var morgan = require("morgan");
 var cors = require("cors");
 var mysql = require("mysql");
 var bodyParser = require("body-parser");
@@ -34,6 +35,7 @@ REST.prototype.connectMysql = function () {
 REST.prototype.configureExpress = function (pool) {
     var self = this;
     app.use(cors());
+    app.use(morgan("combined"))
     app.use(bodyParser.urlencoded({ limit: "50mb",extended: true }));
     app.use(bodyParser.json({limit: "50mb"}));
     var router = express.Router();
