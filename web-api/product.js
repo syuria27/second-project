@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 const isset = require('isset');
+const pad = require('pad-left');
 const moment = require('moment');
 
 function PRODUCT_ROUTER(router, pool) {
@@ -9,7 +10,7 @@ function PRODUCT_ROUTER(router, pool) {
 
 PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
 
- router.get("/products", function (req, res) {
+    router.get("/products", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -41,6 +42,120 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
         });
     });
 
+    router.post("/product/create", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.nama_product)) {
+
+            var query = `INSERT INTO product (nama_product) VALUES (UPPER(?))`;
+            var table = [req.body.nama_product];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                if (err) console.log(err);
+                connection.query(query, function (err, results) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        var kode_product = 'PRD-' + (pad(results.insertId, 4, '0'));
+                        var query = `UPDATE product SET kode_product = ? WHERE id = ?`;
+                        var table = [kode_product, results.insertId];
+                        query = mysql.format(query, table);
+                        pool.getConnection(function (err, connection) {
+                            connection.query(query, function (err) {
+                                connection.release();
+                                if (err) {
+                                    res.status(500);
+                                    data.error_msg = "Error executing MySQL query";
+                                    res.json(data);
+                                } else {
+                                    res.status(200);
+                                    data.error = false;
+                                    data.error_msg = 'Product succesfuly created..';
+                                    res.json(data);
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/product/update", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_product) && isset(req.body.nama_product)) {
+            var query = `UPDATE product SET nama_product = UPPER(?) WHERE kode_product = ?`;
+            var table = [req.body.nama_product, req.body.kode_product];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Product succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/product/status", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_product) && isset(req.body.status)) {
+            var query = `UPDATE product SET status = ? WHERE kode_product = ?`;
+            var table = [req.body.status, req.body.kode_product];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Status succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
     router.get("/product/user/:kode_spg/:bulan/:tahun", function (req, res) {
         var data = {
             error: true,
@@ -53,7 +168,7 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
                     FROM Daily_Product_Report WHERE kode_spg = ?
                     AND MONTH(tanggal) = ? AND YEAR(tanggal) = ?`;
         var table = [req.params.kode_spg, req.params.bulan, req.params.tahun];
-        query = mysql.format(query,table);
+        query = mysql.format(query, table);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();
@@ -97,7 +212,7 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
                         FROM Daily_Product_Report WHERE tanggal = ? AND depot = ?`;
             var table = [req.params.tanggal, req.params.depot];
         }
-        query = mysql.format(query,table);
+        query = mysql.format(query, table);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();
@@ -140,7 +255,7 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
                         FROM Monthly_Product_Report WHERE bulan = ? AND tahun = ? AND depot = ?`;
             var table = [req.params.bulan, req.params.tahun, req.params.depot];
         }
-        query = mysql.format(query,table);
+        query = mysql.format(query, table);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();

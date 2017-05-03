@@ -1,5 +1,6 @@
 var mysql = require("mysql");
 const isset = require('isset');
+const pad = require('pad-left');
 const moment = require('moment');
 
 function FOCUS_ROUTER(router, pool) {
@@ -9,7 +10,7 @@ function FOCUS_ROUTER(router, pool) {
 
 FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
 
- router.get("/focuses", function (req, res) {
+    router.get("/focuses", function (req, res) {
         var data = {
             error: true,
             error_msg: ""
@@ -41,6 +42,120 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
         });
     });
 
+    router.post("/focus/create", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.nama_focus)) {
+
+            var query = `INSERT INTO focus (nama_focus) VALUES (UPPER(?))`;
+            var table = [req.body.nama_focus];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                if (err) console.log(err);
+                connection.query(query, function (err, results) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        var kode_focus = 'PRF-' + (pad(results.insertId, 4, '0'));
+                        var query = `UPDATE focus SET kode_focus = ? WHERE id = ?`;
+                        var table = [kode_focus, results.insertId];
+                        query = mysql.format(query, table);
+                        pool.getConnection(function (err, connection) {
+                            connection.query(query, function (err) {
+                                connection.release();
+                                if (err) {
+                                    res.status(500);
+                                    data.error_msg = "Error executing MySQL query";
+                                    res.json(data);
+                                } else {
+                                    res.status(200);
+                                    data.error = false;
+                                    data.error_msg = 'Focus succesfuly created..';
+                                    res.json(data);
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/focus/update", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_focus) && isset(req.body.nama_focus)) {
+            var query = `UPDATE focus SET nama_focus = UPPER(?) WHERE kode_focus = ?`;
+            var table = [req.body.nama_focus, req.body.kode_focus];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Focus succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
+    router.put("/focus/status", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        if (isset(req.body.kode_focus) && isset(req.body.status)) {
+            var query = `UPDATE focus SET status = ? WHERE kode_focus = ?`;
+            var table = [req.body.status, req.body.kode_focus];
+            query = mysql.format(query, table);
+            pool.getConnection(function (err, connection) {
+                connection.query(query, function (err) {
+                    connection.release();
+                    if (err) {
+                        res.status(500);
+                        data.error_msg = "Error executing MySQL query";
+                        res.json(data);
+                    } else {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Status succesfuly updated..';
+                        res.json(data);
+                    }
+                });
+            });
+        } else {
+            res.status(400);
+            data.error_msg = "Missing some params..";
+            res.json(data);
+        }
+    });
+
     router.get("/focus/user/:kode_spg", function (req, res) {
         var data = {
             error: true,
@@ -53,7 +168,7 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
                     FROM focus f left join focus_report fr 
                     on f.kode_focus = fr.kode_focus AND kode_spg = ?`;
         var table = [req.params.kode_spg];
-        query = mysql.format(query,table);
+        query = mysql.format(query, table);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();
@@ -91,7 +206,7 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
             var query = `SELECT * FROM Focus_Report WHERE depot = ?`;
             var table = [req.params.depot];
         }
-        query = mysql.format(query,table);
+        query = mysql.format(query, table);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();
