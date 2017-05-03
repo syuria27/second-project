@@ -183,7 +183,7 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         var query = `SELECT u.kode_spg, nama_spg, nama_toko, depot, zona, status, hak_akses
-                     FROM user u LEFT JOIN login l ON u.kode_spg = l.kode_spg`;
+                     FROM user u LEFT JOIN login l ON u.kode_spg = l.kode_spg WHERE hak_akses < 3`;
         query = mysql.format(query);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
