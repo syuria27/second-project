@@ -65,7 +65,6 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
             var query = `INSERT INTO focus_report (kode_spg, kode_focus, tanggal) VALUES ?`;
             var table = [inserts];
             query = mysql.format(query, table);
-            console.log(query);
             pool.getConnection(function (err, connection) {
                 connection.query(query, function (err) {
                     connection.release();

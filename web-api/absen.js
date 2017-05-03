@@ -76,7 +76,6 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
         }
 
         query = mysql.format(query, table);
-        console.log(query);
         pool.getConnection(function (err, connection) {
             connection.query(query, function (err, rows) {
                 connection.release();
