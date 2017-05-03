@@ -42,6 +42,39 @@ FOCUS_ROUTER.prototype.handleRoutes = function (router, pool) {
         });
     });
 
+    router.get("/focus/:kode_focus", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        var query = `SELECT * FROM focus WHERE kode_focus = ? `;
+        var table = [req.params.kode_focus];
+        query = mysql.format(query,table);
+        pool.getConnection(function (err, connection) {
+            connection.query(query, function (err, rows) {
+                connection.release();
+                if (err) {
+                    res.status(500);
+                    data.error_msg = "Error executing MySQL query";
+                    res.json(data);
+                } else {
+                    if (rows.length != 0) {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Success..';
+                        data.focus = rows[0];
+                        res.json(data);
+                    } else {
+                        res.status(404);
+                        data.error_msg = 'No focus Found..';
+                        res.json(data);
+                    }
+                }
+            });
+        });
+    });
+
     router.post("/focus/create", function (req, res) {
         var data = {
             error: true,

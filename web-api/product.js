@@ -42,6 +42,39 @@ PRODUCT_ROUTER.prototype.handleRoutes = function (router, pool) {
         });
     });
 
+    router.get("/product/:kode_product", function (req, res) {
+        var data = {
+            error: true,
+            error_msg: ""
+        };
+
+        var query = `SELECT * FROM product WHERE kode_product = ? `;
+        var table = [req.params.kode_product];
+        query = mysql.format(query,table);
+        pool.getConnection(function (err, connection) {
+            connection.query(query, function (err, rows) {
+                connection.release();
+                if (err) {
+                    res.status(500);
+                    data.error_msg = "Error executing MySQL query";
+                    res.json(data);
+                } else {
+                    if (rows.length != 0) {
+                        res.status(200);
+                        data.error = false;
+                        data.error_msg = 'Success..';
+                        data.product = rows[0];
+                        res.json(data);
+                    } else {
+                        res.status(404);
+                        data.error_msg = 'No product Found..';
+                        res.json(data);
+                    }
+                }
+            });
+        });
+    });
+
     router.post("/product/create", function (req, res) {
         var data = {
             error: true,
