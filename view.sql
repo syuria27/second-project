@@ -1,5 +1,5 @@
 create view Daily_Product_Report as (
-	select dr.kode_laporan, dr.kode_spg, u.nama_spg, u.nama_toko, u.depot dr.tanggal,
+	select dr.kode_laporan, dr.kode_spg, u.nama_spg, u.nama_toko, u.depot, dr.tanggal,
 	sum(case when (kode_product = 'PRD-0002') then volume else 0 end) as `ELASTEX`,
 	sum(case when (kode_product = 'PRD-0003') then volume else 0 end) as `WTB_RM`,
 	sum(case when (kode_product = 'PRD-0004') then volume else 0 end) as `MATEX_CAT_GENTENG_CCM`,
@@ -25,7 +25,7 @@ create view Daily_Product_Report as (
 	sum(case when (kode_product = 'PRD-0013') then volume else 0 end) as `VPRO_PPRO_MATEX_KIMEX_TINTING`,
 	sum(case when (kode_product = 'PRD-0005') then volume else 0 end) as `PLATONE_800_or_BEE_BRAND_1000`,
 	sum(case when (kode_product = 'PRD-0001') then volume else 0 end) as `NP_ZINC_CHROMATE_GREEN_or_BODELAC_8000_ZINC_CHROMATE`,
-	ccm, rm
+	ccm as `CCM`, rm as `RM`
 	from daily_report dr 
 	left join product_report pr	
 	on dr.kode_spg = pr.kode_spg and dr.tanggal = pr.tanggal
@@ -60,7 +60,7 @@ create view Monthly_Product_Report as (
 	sum(VPRO_PPRO_MATEX_KIMEX_TINTING) as `VPRO_PPRO_MATEX_KIMEX_TINTING`,
 	sum(PLATONE_800_or_BEE_BRAND_1000) as `PLATONE_800_or_BEE_BRAND_1000`,
 	sum(NP_ZINC_CHROMATE_GREEN_or_BODELAC_8000_ZINC_CHROMATE) as `NP_ZINC_CHROMATE_GREEN_or_BODELAC_8000_ZINC_CHROMATE`,
-	sum(ccm) as ccm, sum(rm) as rm
+	sum(CCM) as CCM, sum(RM) as RM
 	from Daily_Product_Report 
 	group by kode_spg, MONTH(tanggal), YEAR(tanggal)
 );
