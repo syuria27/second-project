@@ -246,10 +246,55 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
                             res.json(data);
                         } else {
                             if (rows.length == 0) {
-                                res.status(400);
-                                data.error = true;
-                                data.error_msg = 'anda sudah telat hari ini';
-                                res.json(data);
+                                if (req.body.zona == 3) {
+                                    var query = `INSERT INTO absen (kode_spg, tanggal, jam_pulang, lokasi_pulang) 
+                                                VALUES(?, CONVERT_TZ(NOW(),@@session.time_zone,'+09:00'),
+                                                CONVERT_TZ(NOW(),@@session.time_zone,'+09:00'), ?)`;
+                                } else if (req.body.zona == 2) {
+                                    var query = `INSERT INTO absen (kode_spg, tanggal, jam_pulang, lokasi_pulang) 
+                                                VALUES(?, CONVERT_TZ(NOW(),@@session.time_zone,'+08:00'),
+                                                CONVERT_TZ(NOW(),@@session.time_zone,'+08:00'), ?)`;
+                                } else {
+                                    var query = `INSERT INTO absen (kode_spg, tanggal, jam_pulang, lokasi_pulang) 
+                                                VALUES(?, CONVERT_TZ(NOW(),@@session.time_zone,'+07:00'),
+                                                CONVERT_TZ(NOW(),@@session.time_zone,'+07:00'), ?)`;
+                                }
+                                var table = [req.body.kode_spg, req.body.lokasi];
+                                query = mysql.format(query, table);
+                                pool.getConnection(function (err, connection) {
+                                    connection.query(query, function (err, results) {
+                                        connection.release();
+                                        if (err) {
+                                            console.log(err);
+                                            res.status(500);
+                                            data.error_msg = "Error executing MySQL query";
+                                            res.json(data);
+                                        } else {
+                                            var kode_absen = 'ABS-' + (pad(results.insertId, 11, '0'));
+                                            var query = `UPDATE absen SET kode_absen = ? WHERE id = ?`;
+                                            var table = [kode_absen, results.insertId];
+                                            query = mysql.format(query, table);
+                                            pool.getConnection(function (err, connection) {
+                                                connection.query(query, function (err) {
+                                                    connection.release();
+                                                    if (err) {
+                                                        console.log(err);
+                                                        res.status(500);
+                                                        data.error_msg = "Error executing MySQL query";
+                                                        res.json(data);
+                                                    } else {
+                                                        fs.writeFile('./upload/' + kode_absen + '-P.jpeg', req.body.photo, 'base64', function (err) {
+                                                        });
+                                                        res.status(200);
+                                                        data.error = false;
+                                                        data.error_msg = 'Absen succesfuly submited';
+                                                        res.json(data);
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    });
+                                });
                             } else {
                                 var query = `SELECT kode_absen,jam_pulang FROM absen 
 						    				WHERE kode_absen = ?`;
