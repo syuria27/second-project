@@ -16,6 +16,12 @@ DAILY_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (isset(req.body.kode_spg) && isset(req.body.ccm) && isset(req.body.rm)) {
+            if (req.body.rm == 1) {
+                var rm = 0;
+            } else {
+                var rm = req.body.rm;
+            }
+
             var query = `SELECT kode_laporan FROM daily_report WHERE kode_spg = ? AND tanggal 
 	        			= DATE(CONVERT_TZ(CURDATE(),@@session.time_zone,'+07:00'))`;
             var table = [req.body.kode_spg];
@@ -35,7 +41,7 @@ DAILY_ROUTER.prototype.handleRoutes = function (router, pool) {
                         } else {
                             var query = `INSERT INTO daily_report (kode_spg, tanggal, ccm, rm) 
 									    VALUES(?, CONVERT_TZ(NOW(),@@session.time_zone,'+07:00'), ?, ?)`;
-                            var table = [req.body.kode_spg, req.body.ccm, req.body.rm];
+                            var table = [req.body.kode_spg, req.body.ccm, rm];
                             query = mysql.format(query, table);
                             pool.getConnection(function (err, connection) {
                                 connection.query(query, function (err, results) {
@@ -119,8 +125,14 @@ DAILY_ROUTER.prototype.handleRoutes = function (router, pool) {
         };
 
         if (isset(req.body.kode_laporan) && isset(req.body.ccm) && isset(req.body.rm)) {
+            if (req.body.rm == 1) {
+                var rm = 0;
+            } else {
+                var rm = req.body.rm;
+            }
+
             var query = `UPDATE daily_report SET ccm = ?, rm = ? WHERE kode_laporan = ?`;
-            var table = [req.body.ccm, req.body.rm, req.body.kode_laporan];
+            var table = [req.body.ccm, rm, req.body.kode_laporan];
             query = mysql.format(query, table);
             pool.getConnection(function (err, connection) {
                 connection.query(query, function (err) {
