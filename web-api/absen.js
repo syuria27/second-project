@@ -48,7 +48,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
                         res.status(200);
                         res.json(data);
                     } else {
-                        data["error_msg"] = 'No Absen Found..';
+                        data.error_msg = 'No Absen Found..';
                         res.status(404);
                         res.json(data);
                     }
@@ -92,7 +92,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
                             var abs = {
                                 kode_absen: absen.kode_absen,
                                 nama_spg: absen.nama_spg,
-                                nama_toko: absen.nama_spg,
+                                nama_toko: absen.nama_toko,
                                 depot: absen.depot,
                                 tanggal: absen.tgl,
                                 jam_masuk: absen.jam_masuk,
@@ -104,7 +104,7 @@ ABSEN_ROUTER.prototype.handleRoutes = function (router, pool) {
                         });res.status(200);
                         res.json(data);
                     } else {
-                        data["error_msg"] = 'No Absen Found..';
+                        data.error_msg = 'No Absen Found..';
                         res.status(404);
                         res.json(data);
                     }

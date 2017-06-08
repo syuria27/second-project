@@ -57,7 +57,7 @@ USER_ROUTER.prototype.handleRoutes = function (router, pool) {
                                             } else {
                                                 res.status(200);
                                                 data.error = false;
-                                                data.error_msg = 'User succesfuly created..';
+                                                data.error_msg = 'User succesfuly created.. Username '+kode_spg;
                                                 res.json(data);
                                             }
                                         });
